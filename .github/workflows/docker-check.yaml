@@ -1,6 +1,7 @@
 name: Docker Check
 
 on:
+  pull_request:
   issue_comment:
     types:
       - created
@@ -9,13 +10,13 @@ on:
 jobs:
   docker-check:
     name: Docker Check
-    if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, 'docker check plz')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.issue.pull_request.head.sha }}
+          repository: ${{ github.event.repository.full_name }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
