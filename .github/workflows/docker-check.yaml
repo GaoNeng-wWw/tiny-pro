@@ -9,17 +9,12 @@ on:
   issue_comment:
     types:
       - created
-  workflow_dispatch:
 
 jobs:
   docker-check:
     name: Docker Check
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event.issue.pull_request && contains(github.event.comment.body, '/cmd docker --check')
-      )
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '/cmd docker --check')
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
