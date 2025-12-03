@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: dockerfile
     env_file:
-      - .env
+      - .env-ci
     environment:
       DATABASE_HOST: mysql
       REDIS_HOST: redis
