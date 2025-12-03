@@ -30,7 +30,7 @@ jobs:
         working-directory: ./template/nestJs
         run: |
           timeout 60 bash -c '
-            until [[ "$(docker compose -f docker-compose.yaml ps --services --filter "status=running" | wc -l)" -ge 1 ]]; do
+            until [[ "$(docker compose -f docker-compose.yml ps --services --filter "status=running" | wc -l)" -ge 1 ]]; do
               sleep 2
             done
           '
@@ -41,8 +41,8 @@ jobs:
       - name: Check service logs
         if: failure()
         working-directory: ./template/nestJs
-        run: docker compose -f docker-compose.yaml logs back
+        run: docker compose -f docker-compose.yml logs back
 
       - name: Shutdown Service
         working-directory: ./template/nestJs
-        run: docker compose -f docker-compose.yaml down
+        run: docker compose -f docker-compose.yml down
