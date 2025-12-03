@@ -20,34 +20,11 @@ jobs:
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-
       - name: Set up Docker Compose
         uses: docker/setup-compose-action@v1
-
-      # --- 新增：带缓存的构建步骤 ---
-      - name: Build and Cache Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./template/nestJs
-          # 指向你的 Dockerfile，如果是默认的 Dockerfile 可以省略 file 参数
-          file: ./template/nestJs/Dockerfile
-          push: false
-          # 这是一个关键参数！必须设置为 true，
-          # 这样构建好的镜像才会加载到本地 Docker 环境供 docker compose 使用
-          load: true
-          tags: nest-app:ci
-          # 使用 GitHub Actions 原生缓存
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Run docker compose
         working-directory: ./template/nestJs
-        # 这里建议加上环境变量或修改 compose 文件以使用上面构建的 'nest-app:ci' 镜像
-        # 如果你的 docker-compose.yml 支持 image 字段覆盖，可以大大加速
-        run: |
-          # 尝试以环境变量形式传递镜像名（取决于你的 compose 写法）
-          # 或者直接启动，因为 layer 已经存在，构建会非常快
-          docker compose -f docker-compose-ci.yml up -d
+        run: docker compose -f docker-compose-ci.yml up -d
 
       - name: Wait Service
         working-directory: ./template/nestJs
@@ -59,9 +36,7 @@ jobs:
           '
 
       - name: Send HealthCheck Request
-        # 加上 docker compose logs 方便调试 curl 失败的情况
-        run: |
-          curl -k --retry 20 --retry-delay 5 --retry-all-errors -f http://localhost:3000/healthCheck
+        run: curl -k --retry 20 --retry-delay 5 --retry-all-errors -f http://localhost:3000/healthCheck
 
       - name: Check service logs
         if: failure()
