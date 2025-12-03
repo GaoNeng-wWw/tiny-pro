@@ -9,26 +9,42 @@ on:
 jobs:
   docker-check:
     name: Docker Check
-    if: ${{github.event.issue.pull_request}}
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, 'docker check plz')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: Build docker image
         working-directory: ./template/nestJs
-        run: docker-compose docker-compose.yaml build
+        run: docker-compose -f docker-compose.yaml build
+
       - name: Run docker compose
         working-directory: ./template/nestJs
-        run: docker-compose up -d
+        run: docker-compose -f docker-compose.yaml up -d
+
       - name: Wait Service
-        run: timeout 60 bash -c 'until docker-compose ps | grep healthy; do sleep 2; done' || true
+        working-directory: ./template/nestJs
+        run: |
+          timeout 60 bash -c '
+            until [[ "$(docker-compose -f docker-compose.yaml ps --services --filter "status=running" | wc -l)" -ge 1 ]]; do
+              sleep 2
+            done
+          '
+
       - name: Send HealthCheck Request
         run: curl -k http://localhost:3000/healthCheck
+
       - name: Check service logs
         if: failure()
-        run: |
-          docker-compose logs back
+        working-directory: ./template/nestJs
+        run: docker-compose -f docker-compose.yaml logs back
+
       - name: Shutdown Service
-        run: docker-compose down
+        working-directory: ./template/nestJs
+        run: docker-compose -f docker-compose.yaml down
