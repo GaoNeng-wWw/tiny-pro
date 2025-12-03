@@ -24,7 +24,7 @@ jobs:
         uses: docker/setup-compose-action@v1
       - name: Run docker compose
         working-directory: ./template/nestJs
-        run: docker compose up -d
+        run: docker compose -f docker-compose-ci.yml up -d
 
       - name: Wait Service
         working-directory: ./template/nestJs
