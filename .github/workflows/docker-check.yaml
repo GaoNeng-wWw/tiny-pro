@@ -19,20 +19,17 @@ jobs:
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Build docker image
-        working-directory: ./template/nestJs
-        run: docker-compose -f docker-compose.yaml build
-
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
       - name: Run docker compose
         working-directory: ./template/nestJs
-        run: docker-compose -f docker-compose.yaml up -d
+        run: docker compose up -d
 
       - name: Wait Service
         working-directory: ./template/nestJs
         run: |
           timeout 60 bash -c '
-            until [[ "$(docker-compose -f docker-compose.yaml ps --services --filter "status=running" | wc -l)" -ge 1 ]]; do
+            until [[ "$(docker compose -f docker-compose.yaml ps --services --filter "status=running" | wc -l)" -ge 1 ]]; do
               sleep 2
             done
           '
@@ -43,8 +40,8 @@ jobs:
       - name: Check service logs
         if: failure()
         working-directory: ./template/nestJs
-        run: docker-compose -f docker-compose.yaml logs back
+        run: docker compose -f docker-compose.yaml logs back
 
       - name: Shutdown Service
         working-directory: ./template/nestJs
-        run: docker-compose -f docker-compose.yaml down
+        run: docker compose -f docker-compose.yaml down
